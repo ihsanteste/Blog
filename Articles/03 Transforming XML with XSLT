@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transforming XML with XSLT | XML Blogger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #7e22ce 0%, #9333ea 50%, #a855f7 100%);
+        }
+        .code-block {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #2d3748;
+            color: #f7fafc;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            overflow-x: auto;
+        }
+        .article-content h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: #1a202c;
+        }
+        .article-content h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: #2d3748;
+        }
+        .article-content p {
+            margin-bottom: 1.25rem;
+            line-height: 1.7;
+            color: #4a5568;
+        }
+        .article-content ul, .article-content ol {
+            margin-bottom: 1.25rem;
+            padding-left: 1.5rem;
+        }
+        .article-content li {
+            margin-bottom: 0.5rem;
+        }
+        .article-content pre {
+            margin-bottom: 1.5rem;
+        }
+        .article-content a {
+            color: #7e22ce;
+            text-decoration: underline;
+        }
+        .article-content a:hover {
+            color: #9333ea;
+        }
+        .toc {
+            position: sticky;
+            top: 6rem;
+            align-self: start;
+        }
+        .toc-link {
+            display: block;
+            padding: 0.5rem 1rem;
+            border-left: 2px solid #e2e8f0;
+            color: #4a5568;
+        }
+        .toc-link:hover {
+            border-left-color: #7e22ce;
+            color: #7e22ce;
+        }
+        .toc-link.active {
+            border-left-color: #7e22ce;
+            color: #7e22ce;
+            font-weight: 600;
+        }
+        .example-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        @media (min-width: 1024px) {
+            .example-container {
+                flex-direction: row;
+            }
+            .example-container > div {
+                flex: 1;
+            }
+        }
+        .example-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+        }
+        .transform-arrow {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+        .transform-arrow i {
+            font-size: 1.5rem;
+            color: #7e22ce;
+        }
+        .template-diagram {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .template-diagram h4 {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #4a5568;
+        }
+        .template-diagram ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .template-diagram li {
+            padding: 0.5rem 1rem;
+            margin-bottom: 0.5rem;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+        }
+        .template-diagram .match {
+            border-left: 4px solid #7e22ce;
+        }
+        .template-diagram .apply {
+            border-left: 4px solid #10b981;
+        }
+        .template-diagram .output {
+            border-left: 4px solid #3b82f6;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Navigation -->
+    <nav class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-code text-2xl mr-2"></i>
+                        <span class="text-xl font-bold">XML Blogger</span>
+                    </div>
+                    <div class="hidden md:flex space-x-6">
+                        <a href="#" class="hover:text-gray-200">Home</a>
+                        <a href="#" class="hover:text-gray-200">Articles</a>
+                        <a href="#" class="hover:text-gray-200">Tutorials</a>
+                        <a href="#" class="hover:text-gray-200">About</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="bg-white text-purple-600 px-4 py-2 rounded-md font-medium hover:bg-gray-100">
+                        Sign In
+                    </button>
+                    <button class="hidden md:block bg-purple-800 text-white px-4 py-2 rounded-md font-medium hover:bg-purple-900">
+                        Subscribe
+                    </button>
+                    <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- Mobile menu -->
+            <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4">
+                <a href="#" class="block py-2 hover:text-gray-200">Home</a>
+                <a href="#" class="block py-2 hover:text-gray-200">Articles</a>
+                <a href="#" class="block py-2 hover:text-gray-200">Tutorials</a>
+                <a href="#" class="block py-2 hover:text-gray-200">About</a>
+                <button class="mt-2 w-full bg-white text-purple-600 px-4 py-2 rounded-md font-medium hover:bg-gray-100">
+                    Sign In
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Article Header -->
+    <header class="bg-white py-8 shadow-sm">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="flex items-center mb-4">
+                    <span class="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-0.5 rounded">XSLT</span>
+                    <span class="text-gray-500 text-sm ml-4">May 15, 2023 • 12 min read</span>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-bold mb-6 text-gray-800">Transforming XML with XSLT</h1>
+                <p class="text-xl text-gray-600 mb-6">Master the art of transforming XML documents into other formats using XSLT stylesheets.</p>
+                <div class="flex items-center">
+                    <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Emma Rodriguez" class="w-10 h-10 rounded-full mr-3">
+                    <div>
+                        <p class="font-medium text-gray-800">Emma Rodriguez</p>
+                        <p class="text-sm text-gray-500">XML Transformation Expert</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Article Content -->
+    <main class="py-8 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8">
+                <!-- Table of Contents -->
+                <div class="hidden lg:block lg:w-1/4">
+                    <div class="toc bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="font-bold text-lg mb-4 text-gray-800">Table of Contents</h3>
+                        <nav id="toc" class="space-y-2">
+                            <a href="#introduction" class="toc-link">Introduction</a>
+                            <a href="#what-is-xslt" class="toc-link">What is XSLT?</a>
+                            <a href="#basic-syntax" class="toc-link">Basic Syntax</a>
+                            <a href="#transformation-process" class="toc-link">Transformation Process</a>
+                            <a href="#templates" class="toc-link">Working with Templates</a>
+                            <a href="#common-tasks" class="toc-link">Common Transformation Tasks</a>
+                            <a href="#advanced-features" class="toc-link">Advanced Features</a>
+                            <a href="#best-practices" class="toc-link">Best Practices</a>
+                            <a href="#conclusion" class="toc-link">Conclusion</a>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Article Body -->
+                <article class="lg:w-3/4 bg-white p-6 md:p-8 rounded-lg shadow-sm article-content">
+                    <img src="https://images.unsplash.com/photo-1624953587687-daf255b6b80a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" 
+                         alt="XSLT Transformation" class="w-full h-64 object-cover rounded-lg mb-8">
+
+                    <section id="introduction">
+                        <h2>Introduction</h2>
+                        <p>In the world of XML processing, XSLT (eXtensible Stylesheet Language Transformations) stands as one of the most powerful tools for converting XML documents into other formats. Whether you need to generate HTML for web display, create PDF documents, or simply restructure your XML data, XSLT provides a declarative language to describe these transformations.</p>
+                        <p>This comprehensive guide will walk you through the fundamentals of XSLT, from basic syntax to advanced techniques, equipping you with the knowledge to harness the full power of XML transformations in your projects.</p>
+                    </section>
+
+                    <section id="what-is-xslt">
+                        <h2>What is XSLT?</h2>
+                        <p>XSLT is a language for transforming XML documents into other XML documents, HTML, plain text, or other formats. It's part of the XSL (eXtensible Stylesheet Language) family of technologies developed by the W3C.</p>
+                        
+                        <div class="bg-purple-50 border-l-4 border-purple-500 p-4 mb-6">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-purple-800">Key Characteristics</h3>
+                                    <div class="mt-2 text-sm text-purple-700">
+                                        <ul class="list-disc pl-5 space-y-1">
+                                            <li>Declarative language (describes what to do, not how to do it)</li>
+                                            <li>Uses pattern matching to select nodes from the source document</li>
+                                            <li>Template-based processing model</li>
+                                            <li>Functional programming style (no side effects)</li>
+                                            <li>Part of the XSL family (along with XPath and XSL-FO)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3>XSLT in the XML Ecosystem</h3>
+                        <p>XSLT works in conjunction with other XML technologies:</p>
+                        <ul class="list-disc pl-6 mb-6">
+                            <li><strong>XML</strong>: The source document to be transformed</li>
+                            <li><strong>XPath</strong>: Used to navigate and select nodes from the XML document</li>
+                            <li><strong>XSL-FO</strong>: For formatting objects (often used with XSLT to generate PDFs)</li>
+                            <li><strong>XSD</strong>: XML Schema can validate both source and transformed documents</li>
+                        </ul>
+                    </section>
+
+                    <section id="basic-syntax">
+                        <h2>Basic Syntax</h2>
+                        <p>An XSLT stylesheet is itself an XML document, which means it must be well-formed XML. The root element of an XSLT stylesheet is <code class="bg-gray-100 px-1 rounded">xsl:stylesheet</code> or <code class="bg-gray-100 px-1 rounded">xsl:transform</code> (they are synonyms).</p>
+                        
+                        <h3>Basic Structure</h3>
+                        <div class="code-block mb-6">
+                            <pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="1.0" 
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"&gt;
+    
+    &lt;xsl:template match="/"&gt;
+        &lt;!-- Transformation rules go here --&gt;
+    &lt;/xsl:template&gt;
+    
+&lt;/xsl:stylesheet&gt;</code></pre>
+                        </div>
+
+                        <h3>Common XSLT Elements</h3>
+                        <ul class="list-disc pl-6 mb-6">
+                            <li><code class="bg-gray-100 px-1 rounded">xsl:template</code>: Defines a processing rule for specific nodes</li>
+                            <li><code class="bg-gray-100 px-1 rounded">xsl:value-of</code>: Extracts the value of a node</li>
+                            <li><code class="bg-gray-100 px-1 rounded">xsl:for-each</code>: Loops through a set of nodes</li>
+                            <li><code class="bg-gray-100 px-1 rounded">xsl:if</code> / <code class="bg-gray-100 px-1 rounded">xsl:choose</code>: Conditional processing</li>
+                            <li><code class="bg-gray-100 px-1 rounded">xsl:apply-templates</code>: Applies templates to child nodes</li>
+                            <li><code class="bg-gray-100 px-1 rounded">xsl:output</code>: Controls the format of the output</li>
+                        </ul>
+                    </section>
+
+                    <section id="transformation-process">
+                        <h2>Transformation Process</h2>
+                        <p>XSLT processors work by:</p>
+                        <ol class="list-decimal pl-6 mb-6">
+                            <li>Parsing the source XML document into a node tree</li>
+                            <li>Reading the XSLT stylesheet and building template rules</li>
+                            <li>Starting at the root node and applying matching templates</li>
+                            <li>Processing child nodes recursively (unless told otherwise)</li>
+                            <li>Building the result tree based on template instructions</li>
+                            <li>Serializing the result tree to the output format</li>
+                        </ol>
+
+                        <div class="example-container">
+                            <div>
+                                <div class="example-title">Source XML</div>
+                                <div class="code-block">
+                                    <pre><code>&lt;catalog&gt;
+    &lt;book id="101"&gt;
+        &lt;title&gt;XSLT Cookbook&lt;/title&gt;
+        &lt;author&gt;Sal Mangano&lt;/author&gt;
+        &lt;price&gt;49.99&lt;/price&gt;
+    &lt;/book&gt;
+&lt;/catalog&gt;</code></pre>
+                                </div>
+                            </div>
+                            
+                            <div class="transform-arrow">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                            
+                            <div>
+                                <div class="example-title">XSLT Stylesheet</div>
+                                <div class="code-block">
+                                    <pre><code>&lt;xsl:stylesheet version="1.0" 
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"&gt;
+    
+    &lt;xsl:template match="/"&gt;
+        &lt;html&gt;
+            &lt;body&gt;
+                &lt;h1&gt;Book Catalog&lt;/h1&gt;
+                &lt;xsl:apply-templates/&gt;
+            &lt;/body&gt;
+        &lt;/html&gt;
+    &lt;/xsl:template&gt;
+    
+    &lt;xsl:template match="book"&gt;
+        &lt;div&gt;
+            &lt;h2&gt;&lt;xsl:value-of select="title"/&gt;&lt;/h2&gt;
+            &lt;p&gt;By &lt;xsl:value-of select="author"/&gt;&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+                                </div>
+                            </div>
+                            
+                            <div class="transform-arrow">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                            
+                            <div>
+                                <div class="example-title">Result HTML</div>
+                                <div class="code-block">
+                                    <pre><code>&lt;html&gt;
+    &lt;body&gt;
+        &lt;h1&gt;Book Catalog&lt;/h1&gt;
+        &lt;div&gt;
+            &lt;h2&gt;XSLT Cookbook&lt;/h2&gt;
+            &lt;p&gt;By Sal Mangano&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="templates">
+                        <h2>Working with Templates</h2>
+                        <p>Templates are the heart of XSLT processing. They define how specific nodes in the source document should be transformed.</p>
+                        
+                        <div class="template-diagram">
+                            <h4>Template Processing Flow</h4>
+                            <ul>
+                                <li class="match">
+                                    <strong>Pattern Matching</strong>: The XSLT processor finds nodes that match the template's <code>match</code> attribute
+                                </li>
+                                <li class="apply">
+                                    <strong>Template Application</strong>: For each matching node, the processor applies the template's instructions
+                                </li>
+                                <li class="output">
+                                    <strong>Result Generation</strong>: The template generates output nodes that are added to the result tree
+                                </li>
+                            </ul>
+                        </div>
+
+                        <h3>Template Priorities</h3>
+                        <p>When multiple templates match a node, the processor determines which one to use based on:</p>
+                        <ul class="list-disc pl-6 mb-6">
+                            <li><strong>Import precedence</strong>: Templates in imported stylesheets have lower priority</li>
+                            <li><strong>Priority attribute</strong>: Explicit priority set with <code class="bg-gray-100 px-1 rounded">priority</code></li>
+                            <li><strong>Pattern specificity</strong>: More specific patterns have higher priority</li>
+                            <li><strong>Document order</strong>: Later templates have higher priority if all else is equal</li>
+                        </ul>
+
+                        <h3>Built-in Templates</h3>
+                        <p>XSLT includes built-in template rules that apply when no explicit template matches:</p>
+                        <div class="code-block mb-6">
+                            <pre><code>&lt;!-- For element nodes --&gt;
+&lt;xsl:template match="*|/"&gt;
+    &lt;xsl:apply-templates/&gt;
+&lt;/xsl:template&gt;
+
+&lt;!-- For text and attribute nodes --&gt;
+&lt;xsl:template match="text()|@*"&gt;
+    &lt;xsl:value-of select="."/&gt;
+&lt;/xsl:template&gt;</code></pre>
+                        </div>
+                    </section>
+
+                    <section id="common-tasks">
+                        <h2>Common Transformation Tasks</h2>
+                        <p>Here are some typical scenarios you'll encounter when working with XSLT:</p>
+                        
+                        <h3>1. Converting XML to HTML</h3>
+                        <div class="code-block mb-6">
+                            <pre><code>&lt;xsl:template match="/"&gt;
+    &lt;html&gt;
+        &lt;head&gt;
+            &lt;title&gt;Book List&lt;/title&gt;
+        &lt;/head&gt;
+        &lt;body&gt;
+            &lt;h1&gt;Book Catalog&lt;/h1&gt;
+            &lt;table border="1"&gt;
+                &lt;tr&gt;
+                    &lt;th&gt;Title&lt;/th&gt;
+                    &lt;th&gt;Author&lt;/th&gt;
+                    &lt;th&gt;Price&lt;/th&gt;
+                &lt;/tr&gt;
+                &lt;xsl:apply-templates select="catalog/book"/&gt;
+            &lt;/table&gt;
+        &lt;/body&gt;
+    &lt;/html&gt;
+&lt;/xsl:template&gt;
+
+&lt;xsl:template match="book"&gt;
+    &lt;tr&gt;
+        &lt;td&gt;&lt;xsl:value-of select="title"/&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;xsl:value-of select="author"/&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;xsl:value-of select="price"/&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+&lt;/xsl:template&gt;</code></pre>
+                        </div>
+
+                        <h3>2. Sorting Data</h3>
+                        <div class="code-block mb-6">
+                            <pre><code>&lt;xsl:template match="catalog"&gt;
+    &lt;books&gt;
+        &lt;xsl:for-each select="book"&gt;
+            &lt;xsl:sort select="price" data-type="number" order="descending"/&gt;
+            &lt;book&gt;
+                &lt;xsl:copy-of select="*"/&gt;
+            &lt;/book&gt;
+        &lt;/xsl:for-each&gt;
+    &lt;/books&gt;
+&lt;/xsl:template&gt;</code></pre>
+                        </div>
+
+                        <h3>3. Conditional Processing</h3>
+                        <div class="code-block mb-6">
+                            <pre><code>&lt;xsl:template match="book"&gt;
+    &lt;div class="book"&gt;
+        &lt;xsl:if test="price &gt; 30"&gt;
+            &lt;span class="premium"&gt;Premium Book&lt;/span&gt;
+        &lt;/xsl:if&gt;
+        &lt;xsl:choose&gt;
+            &lt;xsl:when test="price &lt; 20"&gt;
+                &lt;span class="discount"&gt;Budget Price&lt;/span&gt;
+            &lt;/xsl:when&gt;
+            &lt;xsl:otherwise&gt;
+                &lt;span class="normal"&gt;Standard Price&lt;/span&gt;
+            &lt;/xsl:otherwise&gt;
+        &lt;/xsl:choose&gt;
+    &lt;/div&gt;
+&lt;/xsl:template&gt;</code></pre>
+                        </div>
+                    </section>
+
+                    <section id="advanced-features">
+                        <h2>Advanced Features</h2>
+                        <p>XSLT offers several powerful features for complex transformations:</p>
+                        
+                        <h3>1. Variables and Parameters</h3>
+                        <div class="code-block mb-6">
+                            <pre><code>&lt;xsl:variable name="discount" select="0.2"/&gt;
+&lt;xsl:param name="currency" select="'USD'"/&gt;
+
+&lt;xsl:template match="price"&gt;
+    &lt;price currency="{$currency}"&gt;
+        &lt;xsl:value-of select=". * (1 - $discount)"/&gt;
+    &lt;/price&gt;
+&lt;/xsl:template&gt;</code></pre>
+                        </div>
+
+                        <h3>2. Named Templates</h3>
+                        <div class="code-block mb-6">
+                            <pre><code>&lt;xsl:template name="format-price"&gt;
+    &lt;xsl:param name="amount"/&gt;
+    &lt;xsl:value-of select="format-number($amount, '$#,##0.00')"/&gt;
+&lt;/xsl:template&gt;
+
+&lt;xsl:template match="price"&gt;
+    &lt;xsl:call-template name="format-price"&gt;
+        &lt;xsl:with-param name="amount" select="."/&gt;
+    &lt;/xsl:call-template&gt;
+&lt;/xsl:template&gt;</code></pre>
+                        </div>
+
+                        <h3>3. Multiple Output Documents</h3>
+                        <div class="code-block mb-6">
+                            <pre><code>&lt;xsl:template match="/"&gt;
+    &lt;xsl:for-each select="catalog/book"&gt;
+        &lt;xsl:result-document href="book_{position()}.html"&gt;
+            &lt;html&gt;
+                &lt;body&gt;
+                    &lt;h1&gt;&lt;xsl:value-of select="title"/&gt;&lt;/h1&gt;
+                    &lt;p&gt;By &lt;xsl:value-of select="author"/&gt;&lt;/p&gt;
+                &lt;/body&gt;
+            &lt;/html&gt;
+        &lt;/xsl:result-document&gt;
+    &lt;/xsl:for-each&gt;
+&lt;/xsl:template&gt;</code></pre>
+                        </div>
+                    </section>
+
+                    <section id="best-practices">
+                        <h2>Best Practices</h2>
+                        <p>Follow these guidelines to create maintainable and efficient XSLT stylesheets:</p>
+                        
+                        <h3>1. Modular Design</h3>
+                        <ul class="list-disc pl-6 mb-6">
+                            <li>Break complex transformations into separate templates</li>
+                            <li>Use <code class="bg-gray-100 px-1 rounded">xsl:include</code> and <code class="bg-gray-100 px-1 rounded">xsl:import</code> to reuse common code</li>
+                            <li>Create libraries of utility templates for common tasks</li>
+                        </ul>
+
+                        <h3>2. Performance Optimization</h3>
+                        <ul class="list-disc pl-6 mb-6">
+                            <li>Use <code class="bg-gray-100 px-1 rounded">xsl:key</code> for efficient node lookups</li>
+                            <li>Minimize use of <code class="bg-gray-100 px-1 rounded">//</code> operator in XPath expressions</li>
+                            <li>Cache frequently used values in variables</li>
+                            <li>Consider using XSLT 2.0/3.0 for large transformations</li>
+                        </ul>
+
+                        <h3>3. Maintainability</h3>
+                        <ul class="list-disc pl-6 mb-6">
+                            <li>Add comments to explain complex logic</li>
+                            <li>Use consistent naming conventions</li>
+                            <li>Include documentation with <code class="bg-gray-100 px-1 rounded">xsl:documentation</code></li>
+                            <li>Validate your stylesheets with XML Schema</li>
+                        </ul>
+                    </section>
+
+                    <section id="conclusion">
+                        <h2>Conclusion</h2>
+                        <p>XSLT is a powerful language for transforming XML documents into various formats. While it has a learning curve, its declarative nature and template-based approach make it ideal for many XML processing tasks.</p>
+                        <p>Key takeaways:</p>
+                        <ul class="list-disc pl-6 mb-6">
+                            <li>XSLT uses pattern matching and templates to transform XML</li>
+                            <li>The language is declarative and functional in nature</li>
+                            <li>XPath is used extensively to select nodes from the source document</li>
+                            <li>XSLT can generate HTML, XML, text, and other formats</li>
+                            <li>Modern XSLT processors support versions 1.0, 2.0, and 3.0</li>
+                        </ul>
+                        <p>As you become more comfortable with XSLT, you'll discover its true power in handling complex transformations with relatively simple and maintainable code. Whether you're generating web content, converting between XML vocabularies, or preparing data for other systems, XSLT is a valuable tool in any XML developer's toolkit.</p>
+                    </section>
+
+                    <div class="border-t border-gray-200 mt-8 pt-8">
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <span class="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-0.5 rounded">XSLT</span>
+                            <span class="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded">XML</span>
+                            <span class="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded">Transformation</span>
+                            <span class="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded">XPath</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <button class="flex items-center space-x-2 text-gray-600 hover:text-purple-600">
+                                    <i class="far fa-thumbs-up"></i>
+                                    <span>Like (124)</span>
+                                </button>
+                                <button class="flex items-center space-x-2 text-gray-600 hover:text-purple-600">
+                                    <i class="far fa-comment"></i>
+                                    <span>Comment (28)</span>
+                                </button>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <button class="text-gray-600 hover:text-purple-600">
+                                    <i class="fab fa-twitter"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-purple-600">
+                                    <i class="fab fa-linkedin"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-purple-600">
+                                    <i class="fas fa-link"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </main>
+
+    <!-- Related Articles -->
+    <section class="py-12 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-8 text-gray-800">Related Articles</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Related Article 1 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                    <img src="https://images.unsplash.com/photo-1547658719-da2b51169166?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1528&q=80" 
+                         alt="XML vs JSON" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded">Comparison</span>
+                            <span class="text-gray-500 text-sm ml-4">May 28, 2023</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-800">XML vs JSON: When to Use Which</h3>
+                        <p class="text-gray-600 mb-4">A comprehensive comparison between XML and JSON formats with practical use cases for each.</p>
+                        <div class="flex items-center">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Author" class="w-8 h-8 rounded-full mr-2">
+                            <span class="text-sm text-gray-700">Michael Chen</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Related Article 2 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                    <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1469&q=80" 
+                         alt="XML Schema" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">Schema</span>
+                            <span class="text-gray-500 text-sm ml-4">April 22, 2023</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-800">Defining XML Structures with Schema</h3>
+                        <p class="text-gray-600 mb-4">Learn how to create XML Schemas to validate and define the structure of your XML documents.</p>
+                        <div class="flex items-center">
+                            <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="Author" class="w-8 h-8 rounded-full mr-2">
+                            <span class="text-sm text-gray-700">David Kim</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Related Article 3 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                    <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" 
+                         alt="XML Namespaces" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <span class="bg-indigo-100 text-indigo-800 text-xs font-semibold px-2.5 py-0.5 rounded">XML</span>
+                            <span class="text-gray-500 text-sm ml-4">June 12, 2023</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-800">Understanding XML Namespaces</h3>
+                        <p class="text-gray-600 mb-4">A comprehensive guide to XML namespaces and how to use them to avoid naming conflicts.</p>
+                        <div class="flex items-center">
+                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Author" class="w-8 h-8 rounded-full mr-2">
+                            <span class="text-sm text-gray-700">Sarah Johnson</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="py-12 gradient-bg text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold mb-6">Stay Updated</h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto">
+                Subscribe to our newsletter to get the latest XML tutorials, articles, and news delivered to your inbox.
+            </p>
+            <div class="max-w-md mx-auto flex">
+                <input type="email" placeholder="Your email address" class="flex-grow px-4 py-3 rounded-l-md focus:outline-none text-gray-800">
+                <button class="bg-purple-800 text-white px-6 py-3 rounded-r-md font-medium hover:bg-purple-900">
+                    Subscribe
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">XML Blogger</h3>
+                    <p class="text-gray-400">
+                        The premier destination for XML developers and data enthusiasts to learn, share, and grow.
+                    </p>
+                    <div class="flex space-x-4 mt-4">
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-github"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Resources</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Documentation</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Tutorials</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Code Examples</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Cheat Sheets</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Community</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Forums</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Discord</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Events</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Contributors</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Company</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">About</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Blog</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2023 XML Blogger. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Table of Contents highlighting
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('#toc a');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                
+                if (pageYOffset >= (sectionTop - 300)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
