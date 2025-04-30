@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XML vs JSON: When to Use Which | XML Blogger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #a855f7 100%);
+        }
+        .code-block {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #2d3748;
+            color: #f7fafc;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            overflow-x: auto;
+        }
+        .article-content h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: #1a202c;
+        }
+        .article-content h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: #2d3748;
+        }
+        .article-content p {
+            margin-bottom: 1.25rem;
+            line-height: 1.7;
+            color: #4a5568;
+        }
+        .article-content ul, .article-content ol {
+            margin-bottom: 1.25rem;
+            padding-left: 1.5rem;
+        }
+        .article-content li {
+            margin-bottom: 0.5rem;
+        }
+        .article-content pre {
+            margin-bottom: 1.5rem;
+        }
+        .article-content a {
+            color: #4f46e5;
+            text-decoration: underline;
+        }
+        .article-content a:hover {
+            color: #7c3aed;
+        }
+        .toc {
+            position: sticky;
+            top: 6rem;
+            align-self: start;
+        }
+        .toc-link {
+            display: block;
+            padding: 0.5rem 1rem;
+            border-left: 2px solid #e2e8f0;
+            color: #4a5568;
+        }
+        .toc-link:hover {
+            border-left-color: #4f46e5;
+            color: #4f46e5;
+        }
+        .toc-link.active {
+            border-left-color: #4f46e5;
+            color: #4f46e5;
+            font-weight: 600;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+        .comparison-table th, .comparison-table td {
+            border: 1px solid #e2e8f0;
+            padding: 1rem;
+            text-align: left;
+        }
+        .comparison-table th {
+            background-color: #f7fafc;
+            font-weight: 600;
+        }
+        .comparison-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        .pros-cons {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        .pros-cons > div {
+            flex: 1;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+        }
+        .pros {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+        .cons {
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+        }
+        .pros h3 {
+            color: #166534;
+        }
+        .cons h3 {
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Navigation -->
+    <nav class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-code text-2xl mr-2"></i>
+                        <span class="text-xl font-bold">XML Blogger</span>
+                    </div>
+                    <div class="hidden md:flex space-x-6">
+                        <a href="#" class="hover:text-gray-200">Home</a>
+                        <a href="#" class="hover:text-gray-200">Articles</a>
+                        <a href="#" class="hover:text-gray-200">Tutorials</a>
+                        <a href="#" class="hover:text-gray-200">About</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="bg-white text-indigo-600 px-4 py-2 rounded-md font-medium hover:bg-gray-100">
+                        Sign In
+                    </button>
+                    <button class="hidden md:block bg-indigo-800 text-white px-4 py-2 rounded-md font-medium hover:bg-indigo-900">
+                        Subscribe
+                    </button>
+                    <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- Mobile menu -->
+            <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4">
+                <a href="#" class="block py-2 hover:text-gray-200">Home</a>
+                <a href="#" class="block py-2 hover:text-gray-200">Articles</a>
+                <a href="#" class="block py-2 hover:text-gray-200">Tutorials</a>
+                <a href="#" class="block py-2 hover:text-gray-200">About</a>
+                <button class="mt-2 w-full bg-white text-indigo-600 px-4 py-2 rounded-md font-medium hover:bg-gray-100">
+                    Sign In
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Article Header -->
+    <header class="bg-white py-8 shadow-sm">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="flex items-center mb-4">
+                    <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded">Comparison</span>
+                    <span class="text-gray-500 text-sm ml-4">May 28, 2023 • 10 min read</span>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-bold mb-6 text-gray-800">XML vs JSON: When to Use Which</h1>
+                <div class="flex items-center">
+                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Michael Chen" class="w-10 h-10 rounded-full mr-3">
+                    <div>
+                        <p class="font-medium text-gray-800">Michael Chen</p>
+                        <p class="text-sm text-gray-500">Data Format Specialist</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Article Content -->
+    <main class="py-8 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8">
+                <!-- Table of Contents -->
+                <div class="hidden lg:block lg:w-1/4">
+                    <div class="toc bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="font-bold text-lg mb-4 text-gray-800">Table of Contents</h3>
+                        <nav id="toc" class="space-y-2">
+                            <a href="#introduction" class="toc-link">Introduction</a>
+                            <a href="#basic-comparison" class="toc-link">Basic Comparison</a>
+                            <a href="#syntax-differences" class="toc-link">Syntax Differences</a>
+                            <a href="#xml-pros-cons" class="toc-link">XML Pros & Cons</a>
+                            <a href="#json-pros-cons" class="toc-link">JSON Pros & Cons</a>
+                            <a href="#use-cases" class="toc-link">When to Use Each</a>
+                            <a href="#conclusion" class="toc-link">Conclusion</a>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Article Body -->
+                <article class="lg:w-3/4 bg-white p-6 md:p-8 rounded-lg shadow-sm article-content">
+                    <img src="https://images.unsplash.com/photo-1547658719-da2b51169166?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1528&q=80" 
+                         alt="XML vs JSON" class="w-full h-64 object-cover rounded-lg mb-8">
+
+                    <section id="introduction">
+                        <h2>Introduction</h2>
+                        <p>In the world of data interchange formats, XML (eXtensible Markup Language) and JSON (JavaScript Object Notation) are two of the most widely used options. While both serve similar purposes of storing and transporting data, they have distinct characteristics that make each better suited for certain scenarios.</p>
+                        <p>This comprehensive comparison will help you understand the key differences between XML and JSON, their respective strengths and weaknesses, and when you should choose one over the other for your projects.</p>
+                    </section>
+
+                    <section id="basic-comparison">
+                        <h2>Basic Comparison</h2>
+                        <p>Before diving into technical details, let's look at a high-level overview of how XML and JSON compare:</p>
+                        
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>XML</th>
+                                    <th>JSON</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>First appeared</td>
+                                    <td>1996</td>
+                                    <td>2001</td>
+                                </tr>
+                                <tr>
+                                    <td>Origin</td>
+                                    <td>SGML</td>
+                                    <td>JavaScript</td>
+                                </tr>
+                                <tr>
+                                    <td>Data types</td>
+                                    <td>Text only</td>
+                                    <td>Numbers, strings, booleans, arrays, objects, null</td>
+                                </tr>
+                                <tr>
+                                    <td>Readability</td>
+                                    <td>Moderate (verbose)</td>
+                                    <td>Good (compact)</td>
+                                </tr>
+                                <tr>
+                                    <td>Parsing speed</td>
+                                    <td>Slower</td>
+                                    <td>Faster</td>
+                                </tr>
+                                <tr>
+                                    <td>Native support</td>
+                                    <td>Most languages</td>
+                                    <td>JavaScript (native), others via libraries</td>
+                                </tr>
+                                <tr>
+                                    <td>Schema support</td>
+                                    <td>XSD, DTD</td>
+                                    <td>JSON Schema</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="syntax-differences">
+                        <h2>Syntax Differences</h2>
+                        <p>The most obvious difference between XML and JSON is their syntax. Let's compare how the same data would be represented in both formats:</p>
+                        
+                        <h3>XML Example</h3>
+                        <div class="code-block mb-6">
+                            <pre><code>&lt;person&gt;
+    &lt;firstName&gt;John&lt;/firstName&gt;
+    &lt;lastName&gt;Doe&lt;/lastName&gt;
+    &lt;age&gt;30&lt;/age&gt;
+    &lt;address&gt;
+        &lt;street&gt;123 Main St&lt;/street&gt;
+        &lt;city&gt;Anytown&lt;/city&gt;
+        &lt;state&gt;CA&lt;/state&gt;
+        &lt;zip&gt;12345&lt;/zip&gt;
+    &lt;/address&gt;
+    &lt;phoneNumbers&gt;
+        &lt;phone type="home"&gt;555-1234&lt;/phone&gt;
+        &lt;phone type="mobile"&gt;555-5678&lt;/phone&gt;
+    &lt;/phoneNumbers&gt;
+&lt;/person&gt;</code></pre>
+                        </div>
+
+                        <h3>JSON Example</h3>
+                        <div class="code-block mb-6">
+                            <pre><code>{
+    "firstName": "John",
+    "lastName": "Doe",
+    "age": 30,
+    "address": {
+        "street": "123 Main St",
+        "city": "Anytown",
+        "state": "CA",
+        "zip": "12345"
+    },
+    "phoneNumbers": [
+        {
+            "type": "home",
+            "number": "555-1234"
+        },
+        {
+            "type": "mobile",
+            "number": "555-5678"
+        }
+    ]
+}</code></pre>
+                        </div>
+
+                        <p>Key syntax differences:</p>
+                        <ul class="list-disc pl-6">
+                            <li>XML uses tags with angle brackets, JSON uses key-value pairs with curly braces</li>
+                            <li>XML requires closing tags, JSON doesn't</li>
+                            <li>XML supports attributes, JSON doesn't (must be represented as properties)</li>
+                            <li>XML is more verbose, JSON is more compact</li>
+                            <li>XML can include comments, JSON cannot</li>
+                        </ul>
+                    </section>
+
+                    <section id="xml-pros-cons">
+                        <h2>XML Pros & Cons</h2>
+                        
+                        <div class="pros-cons">
+                            <div class="pros">
+                                <h3>Advantages of XML</h3>
+                                <ul class="list-disc pl-6">
+                                    <li><strong>Mature technology</strong> with extensive tooling and standards</li>
+                                    <li><strong>Excellent for document markup</strong> (e.g., XHTML, DocBook)</li>
+                                    <li><strong>Strong schema support</strong> (XSD, DTD) for validation</li>
+                                    <li><strong>Supports mixed content</strong> (text with markup)</li>
+                                    <li><strong>Namespace support</strong> for combining vocabularies</li>
+                                    <li><strong>Transformable</strong> with XSLT to other formats</li>
+                                    <li><strong>Human-readable</strong> (though more verbose than JSON)</li>
+                                </ul>
+                            </div>
+                            <div class="cons">
+                                <h3>Disadvantages of XML</h3>
+                                <ul class="list-disc pl-6">
+                                    <li><strong>Verbose syntax</strong> leads to larger file sizes</li>
+                                    <li><strong>Slower to parse</strong> than JSON due to complexity</li>
+                                    <li><strong>More complex</strong> to process with DOM/SAX parsers</li>
+                                    <li><strong>No native data types</strong> (everything is text)</li>
+                                    <li><strong>Less suitable</strong> for simple data interchange</li>
+                                    <li><strong>No direct mapping</strong> to most programming language data structures</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="json-pros-cons">
+                        <h2>JSON Pros & Cons</h2>
+                        
+                        <div class="pros-cons">
+                            <div class="pros">
+                                <h3>Advantages of JSON</h3>
+                                <ul class="list-disc pl-6">
+                                    <li><strong>Lightweight</strong> and compact syntax</li>
+                                    <li><strong>Fast to parse</strong> and generate</li>
+                                    <li><strong>Native support</strong> in JavaScript (and easy in other languages)</li>
+                                    <li><strong>Maps directly</strong> to common data structures</li>
+                                    <li><strong>Supports basic data types</strong> (numbers, strings, booleans, etc.)</li>
+                                    <li><strong>Excellent for APIs</strong> and web services</li>
+                                    <li><strong>Human-readable</strong> and easy to write</li>
+                                </ul>
+                            </div>
+                            <div class="cons">
+                                <h3>Disadvantages of JSON</h3>
+                                <ul class="list-disc pl-6">
+                                    <li><strong>No namespace support</strong> can lead to naming conflicts</li>
+                                    <li><strong>No schema support</strong> (JSON Schema exists but isn't as mature as XSD)</li>
+                                    <li><strong>No comments</strong> in the specification</li>
+                                    <li><strong>Poor for document markup</strong> (no mixed content support)</li>
+                                    <li><strong>Limited tooling</strong> compared to XML</li>
+                                    <li><strong>No standard</strong> for transformations (like XSLT)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="use-cases">
+                        <h2>When to Use Each</h2>
+                        <p>Based on their characteristics, here are guidelines for when to choose XML or JSON:</p>
+                        
+                        <h3>Choose XML when:</h3>
+                        <ul class="list-disc pl-6 mb-6">
+                            <li>You need to <strong>mark up documents</strong> with mixed content (text with markup)</li>
+                            <li>You require <strong>strong validation</strong> through schemas (XSD)</li>
+                            <li>You need to <strong>transform data</strong> between formats (XSLT)</li>
+                            <li>You're working with <strong>legacy systems</strong> that expect XML</li>
+                            <li>You need <strong>namespaces</strong> to combine multiple vocabularies</li>
+                            <li>You're working with <strong>configuration files</strong> that need comments</li>
+                        </ul>
+
+                        <h3>Choose JSON when:</h3>
+                        <ul class="list-disc pl-6 mb-6">
+                            <li>You're building <strong>web APIs</strong> or services</li>
+                            <li>You need <strong>fast parsing</strong> and small payloads</li>
+                            <li>You're working with <strong>JavaScript</strong> applications</li>
+                            <li>You need simple <strong>data interchange</strong> between systems</li>
+                            <li>You want data that <strong>maps directly</strong> to programming language objects</li>
+                            <li>You're working with <strong>NoSQL databases</strong> like MongoDB</li>
+                        </ul>
+
+                        <h3>Hybrid Approaches</h3>
+                        <p>In some cases, you might use both formats in different parts of your system. For example:</p>
+                        <ul class="list-disc pl-6">
+                            <li>Using XML for configuration and documentation, JSON for APIs</li>
+                            <li>Storing data in XML for long-term archival, but serving it as JSON via transformation</li>
+                            <li>Using XML for complex enterprise systems, JSON for web/mobile interfaces</li>
+                        </ul>
+                    </section>
+
+                    <section id="conclusion">
+                        <h2>Conclusion</h2>
+                        <p>Both XML and JSON are valuable tools in a developer's toolkit, each with their own strengths. XML remains the better choice for document markup and complex data structures requiring validation, while JSON excels at lightweight data interchange and web APIs.</p>
+                        <p>The choice between them should be based on your specific requirements:</p>
+                        <ul class="list-disc pl-6">
+                            <li><strong>For web applications and APIs</strong>, JSON is usually the better choice</li>
+                            <li><strong>For document processing and complex data</strong>, XML often has the advantage</li>
+                            <li><strong>For configuration</strong>, both can work but JSON is often simpler</li>
+                            <li><strong>For data interchange</strong>, JSON is typically more efficient</li>
+                        </ul>
+                        <p class="mt-4">Ultimately, understanding both formats will make you a more versatile developer, able to choose the right tool for each job.</p>
+                    </section>
+
+                    <div class="border-t border-gray-200 mt-8 pt-8">
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded">Comparison</span>
+                            <span class="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded">XML</span>
+                            <span class="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded">JSON</span>
+                            <span class="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded">Data Formats</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <button class="flex items-center space-x-2 text-gray-600 hover:text-indigo-600">
+                                    <i class="far fa-thumbs-up"></i>
+                                    <span>Like (87)</span>
+                                </button>
+                                <button class="flex items-center space-x-2 text-gray-600 hover:text-indigo-600">
+                                    <i class="far fa-comment"></i>
+                                    <span>Comment (15)</span>
+                                </button>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <button class="text-gray-600 hover:text-indigo-600">
+                                    <i class="fab fa-twitter"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-indigo-600">
+                                    <i class="fab fa-linkedin"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-indigo-600">
+                                    <i class="fas fa-link"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </main>
+
+    <!-- Related Articles -->
+    <section class="py-12 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-8 text-gray-800">Related Articles</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Related Article 1 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                    <img src="https://images.unsplash.com/photo-1624953587687-daf255b6b80a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" 
+                         alt="XSLT" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <span class="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-0.5 rounded">XSLT</span>
+                            <span class="text-gray-500 text-sm ml-4">May 15, 2023</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-800">Transforming XML with XSLT</h3>
+                        <p class="text-gray-600 mb-4">Master the art of transforming XML documents into other formats using XSLT stylesheets.</p>
+                        <div class="flex items-center">
+                            <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Author" class="w-8 h-8 rounded-full mr-2">
+                            <span class="text-sm text-gray-700">Emma Rodriguez</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Related Article 2 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                    <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1469&q=80" 
+                         alt="XML Schema" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">Schema</span>
+                            <span class="text-gray-500 text-sm ml-4">April 22, 2023</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-800">Defining XML Structures with Schema</h3>
+                        <p class="text-gray-600 mb-4">Learn how to create XML Schemas to validate and define the structure of your XML documents.</p>
+                        <div class="flex items-center">
+                            <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="Author" class="w-8 h-8 rounded-full mr-2">
+                            <span class="text-sm text-gray-700">David Kim</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Related Article 3 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                    <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" 
+                         alt="XML Namespaces" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <span class="bg-indigo-100 text-indigo-800 text-xs font-semibold px-2.5 py-0.5 rounded">XML</span>
+                            <span class="text-gray-500 text-sm ml-4">June 12, 2023</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-800">Understanding XML Namespaces</h3>
+                        <p class="text-gray-600 mb-4">A comprehensive guide to XML namespaces and how to use them to avoid naming conflicts.</p>
+                        <div class="flex items-center">
+                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Author" class="w-8 h-8 rounded-full mr-2">
+                            <span class="text-sm text-gray-700">Sarah Johnson</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="py-12 gradient-bg text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold mb-6">Stay Updated</h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto">
+                Subscribe to our newsletter to get the latest XML tutorials, articles, and news delivered to your inbox.
+            </p>
+            <div class="max-w-md mx-auto flex">
+                <input type="email" placeholder="Your email address" class="flex-grow px-4 py-3 rounded-l-md focus:outline-none text-gray-800">
+                <button class="bg-indigo-800 text-white px-6 py-3 rounded-r-md font-medium hover:bg-indigo-900">
+                    Subscribe
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">XML Blogger</h3>
+                    <p class="text-gray-400">
+                        The premier destination for XML developers and data enthusiasts to learn, share, and grow.
+                    </p>
+                    <div class="flex space-x-4 mt-4">
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-github"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Resources</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Documentation</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Tutorials</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Code Examples</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Cheat Sheets</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Community</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Forums</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Discord</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Events</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Contributors</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Company</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">About</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Blog</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2023 XML Blogger. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Table of Contents highlighting
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('#toc a');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                
+                if (pageYOffset >= (sectionTop - 300)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
